@@ -1,0 +1,28 @@
+name: Check MOPS Updates
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # UTC 01:00 = 台灣 09:00
+  workflow_dispatch:  # 手動觸發
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install httpx beautifulsoup4
+
+      - run: python main.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state.json README.md
+          git diff --staged --quiet || git commit -m "Update"
+          git push
