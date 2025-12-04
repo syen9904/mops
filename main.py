@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import json
 import asyncio
 import re
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 COMPANIES_FILE = "companies.txt"
@@ -37,7 +37,8 @@ def save_state(state: dict):
 
 def generate_readme(companies: list[str], state: dict, updates: list[str], names: dict):
     """生成易讀的 README.md"""
-    now = datetime.now().strftime("%Y/%m/%d %H:%M")
+    taipei_tz = timezone(timedelta(hours=8))
+    now = datetime.now(taipei_tz).strftime("%Y/%m/%d %H:%M")
 
     # 先按更新日期（新到舊），再按法說會日期（舊到新）
     def sort_key(co_id):
@@ -56,7 +57,9 @@ def generate_readme(companies: list[str], state: dict, updates: list[str], names
     lines = [
         "# 法說會追蹤",
         "",
-        f"最後執行：{now}",
+        "built by [小嚴](https://linkedin.com/in/syen9904)",
+        "",
+        f"最後執行：{now} (UTC+8)",
         "",
     ]
 
