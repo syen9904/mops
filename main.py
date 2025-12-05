@@ -49,8 +49,10 @@ def generate_readme(companies: list[str], state: dict, updates: list[str], names
         else:
             updated = ""
             content = ""
-        # 更新日期反轉（新的在前），法說會日期正常（舊的在前）
-        return (-int(updated.replace("/", "")) if updated else 0, content)
+        # 更新時間反轉（新的在前），法說會日期正常（舊的在前）
+        # 格式: "MM/DD HH:MM" -> 移除符號變數字排序
+        sort_val = updated.replace("/", "").replace(" ", "").replace(":", "") if updated else ""
+        return (-int(sort_val) if sort_val.isdigit() else 0, content)
 
     sorted_companies = sorted(companies, key=sort_key)
 
@@ -73,9 +75,9 @@ def generate_readme(companies: list[str], state: dict, updates: list[str], names
     lines.append("## 追蹤清單")
     lines.append("")
     lines.append("- 每日盤前盤後自動更新（確切時間以伺服器排程為主）")
-    lines.append("- 排序：更新日期（新→舊），再依法說會開始日期（舊→新）")
+    lines.append("- 排序：更新時間（新→舊），再依法說會開始日期（舊→新）")
     lines.append("")
-    lines.append("| 代號 | 公司 | 法說會日期 | 更新日期 |")
+    lines.append("| 代號 | 公司 | 法說會日期 | 更新時間 |")
     lines.append("|------|------|-----------|---------|")
 
     for co_id in sorted_companies:
@@ -154,7 +156,8 @@ async def main():
     updates = []
     names = {}  # co_id -> name (stateless)
 
-    today = datetime.now().strftime("%Y/%m/%d")
+    taipei_tz = timezone(timedelta(hours=8))
+    now_str = datetime.now(taipei_tz).strftime("%m/%d %H:%M")
 
     async with httpx.AsyncClient(timeout=30, verify=False) as client:
         for co_id in companies:
@@ -166,7 +169,7 @@ async def main():
 
             if new_content and new_content != old_content:
                 updates.append(f"**{co_id} {name or ''}**")
-                state[co_id] = {"content": new_content, "updated": today}
+                state[co_id] = {"content": new_content, "updated": now_str}
                 print(f"  {co_id} {name}: UPDATED")
             else:
                 print(f"  {co_id} {name}: no change")
