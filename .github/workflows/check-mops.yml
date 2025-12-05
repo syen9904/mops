@@ -3,7 +3,7 @@ name: Check MOPS Updates
 on:
   schedule:
     - cron: '0 22 * * *'  # UTC 22:00 = 台灣 06:00
-    - cron: '0 4 * * *'   # UTC 04:00 = 台灣 12:00
+    - cron: '45 5 * * *'  # UTC 05:45 = 台灣 13:45
   workflow_dispatch:  # 手動觸發
 
 jobs:
