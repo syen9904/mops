@@ -50,7 +50,7 @@ def generate_readme(companies: list[str], state: dict, updates: list[str], names
             updated = ""
             content = ""
         # 更新時間反轉（新的在前），法說會日期正常（舊的在前）
-        # 格式: "MM/DD HH:MM" -> 移除符號變數字排序
+        # 格式: "YYYY/MM/DD HH:MM" -> 移除符號變數字排序
         sort_val = updated.replace("/", "").replace(" ", "").replace(":", "") if updated else ""
         return (-int(sort_val) if sort_val.isdigit() else 0, content)
 
@@ -157,7 +157,7 @@ async def main():
     names = {}  # co_id -> name (stateless)
 
     taipei_tz = timezone(timedelta(hours=8))
-    now_str = datetime.now(taipei_tz).strftime("%m/%d %H:%M")
+    now_str = datetime.now(taipei_tz).strftime("%Y/%m/%d %H:%M")
 
     async with httpx.AsyncClient(timeout=30, verify=False) as client:
         for co_id in companies:
