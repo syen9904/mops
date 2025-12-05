@@ -72,7 +72,7 @@ def generate_readme(companies: list[str], state: dict, updates: list[str], names
 
     lines.append("## 追蹤清單")
     lines.append("")
-    lines.append("- 每日自動更新（台北時間 09:00）")
+    lines.append("- 每日自動更新（台北時間 06:00、12:00）")
     lines.append("- 排序：更新日期（新→舊），再依法說會開始日期（舊→新）")
     lines.append("")
     lines.append("| 代號 | 公司 | 法說會日期 | 更新日期 |")
