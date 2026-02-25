@@ -258,7 +258,7 @@
 
 <script>
   let allRows = [];
-  let sortCol = 3;
+  let sortCol = null; // null = default dual-sort (matching Chinese README)
   let sortAsc = false;
   let activeFilter = 'all';
 
@@ -316,12 +316,24 @@
   }
 
   function sortAndRender() {
-    const key = ['id', 'name', 'zhName', 'date', 'updated'][sortCol];
-    allRows.sort((a, b) => {
-      const av = a[key] || '';
-      const bv = b[key] || '';
-      return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
-    });
+    if (sortCol === null) {
+      // Default: updated desc, then date asc (matching Chinese README)
+      allRows.sort((a, b) => {
+        const ua = (a.updated || '').replace(/[\/ :]/g, '');
+        const ub = (b.updated || '').replace(/[\/ :]/g, '');
+        const uav = ua && /^\d+$/.test(ua) ? parseInt(ua) : 0;
+        const ubv = ub && /^\d+$/.test(ub) ? parseInt(ub) : 0;
+        if (ubv !== uav) return ubv - uav; // updated desc
+        return (a.date || '').localeCompare(b.date || ''); // date asc
+      });
+    } else {
+      const key = ['id', 'name', 'zhName', 'date', 'updated'][sortCol];
+      allRows.sort((a, b) => {
+        const av = a[key] || '';
+        const bv = b[key] || '';
+        return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+      });
+    }
     render(allRows);
   }
 
