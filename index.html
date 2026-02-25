@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taiwan Earnings Call Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #fff;
+      --text: #1a1a2e;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --hover: #f9fafb;
+      --highlight: #fefce8;
+      --radius: 10px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    header { margin-bottom: 2rem; }
+    h1 { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; }
+    .subtitle { color: var(--text-secondary); margin-top: 0.25rem; font-size: 0.95rem; }
+    .description { color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.75rem; line-height: 1.7; }
+    .impact { font-size: 0.85rem; font-weight: 500; margin-top: 0.5rem; color: var(--text); }
+    .meta { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.75rem; }
+    .meta a { color: var(--accent); text-decoration: none; }
+    .meta a:hover { text-decoration: underline; }
+
+    .tech-stack {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .tech-stack span {
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: var(--accent-light);
+      color: var(--accent);
+      letter-spacing: 0.02em;
+    }
+
+    .search-bar {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 0.7rem 1rem 0.7rem 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-family: inherit;
+      background: var(--surface);
+      transition: border-color 0.2s;
+    }
+    .search-bar input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .search-bar::before {
+      content: "\1F50D";
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      opacity: 0.4;
+    }
+
+    .stats {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .stats strong { color: var(--text); }
+
+    .filters {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .filter-btn {
+      font-family: inherit;
+      font-size: 0.8rem;
+      padding: 0.35rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .table-wrap {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    th {
+      text-align: left;
+      padding: 0.7rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    th:hover { color: var(--text); }
+    th .arrow { margin-left: 0.25rem; font-size: 0.7rem; opacity: 0.4; }
+    th.active .arrow { opacity: 1; color: var(--accent); }
+
+    td {
+      padding: 0.6rem 1rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--hover); }
+    tr.recent td { background: var(--highlight); }
+    tr.recent:hover td { background: #fef9c3; }
+
+    td:first-child {
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      background: var(--accent);
+      color: #fff;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+
+    .no-data { color: var(--text-secondary); }
+
+    footer {
+      margin-top: 2.5rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 640px) {
+      .container { padding: 1.5rem 1rem; }
+      h1 { font-size: 1.35rem; }
+      td, th { padding: 0.5rem 0.6rem; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Taiwan Earnings Call Tracker</h1>
+      <p class="subtitle">Capturing last-minute disclosures before anyone else does.</p>
+      <p class="description">
+        Many Taiwan-listed companies disclose earnings call dates at the last possible moment. Teams customize their own watchlist to track exactly the companies they care about &mdash; the system then monitors TWSE filings twice daily and surfaces changes the moment they appear.
+      </p>
+      <p class="impact">
+        <span id="company-count">-</span> companies in this watchlist &middot; Open-source &middot; Used by dozens of institutional teams &middot; ~14,000 hours saved per year
+      </p>
+      <div class="tech-stack">
+        <span>Python</span>
+        <span>GitHub Actions</span>
+        <span>TWSE API</span>
+        <span>Web Scraping</span>
+      </div>
+      <p class="meta">
+        Built by <a href="https://linkedin.com/in/syen9904">Sean Yen</a> &middot;
+        <a href="https://github.com/syen9904/mops">Source Code</a> &middot;
+        Last updated: <span id="last-updated">-</span>
+      </p>
+    </header>
+
+    <div class="search-bar">
+      <input type="text" id="search" placeholder="Filter your watchlist — try &quot;TSMC&quot; or &quot;2330&quot;...">
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="recent">Recently Updated</button>
+      <button class="filter-btn" data-filter="upcoming">Upcoming Calls</button>
+    </div>
+
+    <div class="stats">
+      <span><strong id="total-count">-</strong> in watchlist</span>
+      <span><strong id="visible-count">-</strong> shown</span>
+      <span><strong id="recent-count">-</strong> updated in last run</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-col="0">Ticker <span class="arrow">&#9650;</span></th>
+            <th data-col="1">Company <span class="arrow">&#9650;</span></th>
+            <th data-col="2">Chinese <span class="arrow">&#9650;</span></th>
+            <th data-col="3">Earnings Call Date <span class="arrow">&#9650;</span></th>
+            <th data-col="4">Updated <span class="arrow">&#9650;</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="5" class="loading">Loading data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      <p>Data sourced from <a href="https://mops.twse.com.tw">TWSE MOPS</a>. Runs automatically before and after market hours via GitHub Actions.</p>
+    </footer>
+  </div>
+
+<script>
+  let allRows = [];
+  let sortCol = 3;
+  let sortAsc = false;
+  let activeFilter = 'all';
+
+  function rocToWestern(str) {
+    return str.replace(/(\d{2,3})\/(\d{2}\/\d{2})/g, (_, roc, rest) =>
+      (parseInt(roc) + 1911) + '/' + rest
+    );
+  }
+
+  function cleanDate(raw) {
+    if (!raw || raw === '-') return '-';
+    return rocToWestern(raw.replace(/時間：.*?24小時制\)?/g, '').trim());
+  }
+
+  async function loadData() {
+    try {
+      const [stateRes, namesRes] = await Promise.all([
+        fetch('./state.json'),
+        fetch('./names.json'),
+      ]);
+      const state = await stateRes.json();
+      const names = namesRes.ok ? await namesRes.json() : {};
+
+      // 找出最新一次更新的時間
+      let latestUpdated = '';
+      for (const data of Object.values(state)) {
+        const u = typeof data === 'object' ? (data.updated || '') : '';
+        if (u > latestUpdated) latestUpdated = u;
+      }
+
+      allRows = Object.entries(state).map(([id, data]) => {
+        const info = names[id] || {};
+        const enName = info.en || id;
+        const zhName = info.zh || '';
+        const content = typeof data === 'object' ? (data.content || '-') : (data || '-');
+        const updated = typeof data === 'object' ? (data.updated || '-') : '-';
+        const dateClean = cleanDate(content);
+        // 判斷法說會是否在今天或之後
+        const dateMatch = dateClean.match(/^(\d{4})\/(\d{2})\/(\d{2})/);
+        const upcoming = dateMatch ? new Date(dateMatch[1], dateMatch[2] - 1, dateMatch[3]) >= new Date(new Date().toDateString()) : false;
+        return { id, name: enName, zhName, date: dateClean, updated, recent: updated === latestUpdated, upcoming };
+      });
+
+      const recentCount = allRows.filter(r => r.recent).length;
+
+      document.getElementById('total-count').textContent = allRows.length;
+      document.getElementById('company-count').textContent = allRows.length;
+      document.getElementById('recent-count').textContent = recentCount;
+      document.getElementById('last-updated').textContent = latestUpdated || '-';
+      sortAndRender();
+    } catch (e) {
+      document.getElementById('tbody').innerHTML =
+        '<tr><td colspan="5" class="loading">Failed to load data. Make sure state.json exists.</td></tr>';
+    }
+  }
+
+  function sortAndRender() {
+    const key = ['id', 'name', 'zhName', 'date', 'updated'][sortCol];
+    allRows.sort((a, b) => {
+      const av = a[key] || '';
+      const bv = b[key] || '';
+      return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+    render(allRows);
+  }
+
+  function render(rows) {
+    const q = document.getElementById('search').value.toLowerCase();
+    let filtered = rows;
+    if (activeFilter === 'recent') filtered = filtered.filter(r => r.recent);
+    if (activeFilter === 'upcoming') filtered = filtered.filter(r => r.upcoming);
+    if (q) filtered = filtered.filter(r => r.id.includes(q) || r.name.toLowerCase().includes(q) || r.zhName.includes(q));
+
+    document.getElementById('visible-count').textContent = filtered.length;
+    const tbody = document.getElementById('tbody');
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="no-data">No matching companies found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(r => {
+      const cls = r.recent ? ' class="recent"' : '';
+      const badge = r.recent ? '<span class="badge">NEW</span>' : '';
+      return `<tr${cls}><td>${r.id}</td><td>${r.name}${badge}</td><td>${r.zhName}</td><td>${r.date}</td><td>${r.updated}</td></tr>`;
+    }).join('');
+  }
+
+  // Search
+  document.getElementById('search').addEventListener('input', () => render(allRows));
+
+  // Filters
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFilter = btn.dataset.filter;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render(allRows);
+    });
+  });
+
+  // Sort
+  document.querySelectorAll('th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = parseInt(th.dataset.col);
+      if (sortCol === col) { sortAsc = !sortAsc; } else { sortCol = col; sortAsc = true; }
+      document.querySelectorAll('th').forEach(t => t.classList.remove('active'));
+      th.classList.add('active');
+      th.querySelector('.arrow').innerHTML = sortAsc ? '&#9650;' : '&#9660;';
+      sortAndRender();
+    });
+  });
+
+  loadData();
+</script>
+</body>
+</html>

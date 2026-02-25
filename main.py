@@ -2,13 +2,20 @@ import httpx
 from bs4 import BeautifulSoup
 import json
 import asyncio
-import re
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 COMPANIES_FILE = "companies.txt"
 STATE_FILE = "state.json"
 README_FILE = "README.md"
+NAMES_FILE = "names.json"
+
+NAMES_APIS = [
+    ("上市", "https://openapi.twse.com.tw/v1/opendata/t187ap03_L",
+     "公司代號", "公司簡稱", "英文簡稱"),
+    ("上櫃", "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O",
+     "SecuritiesCompanyCode", "CompanyAbbreviation", "Symbol"),
+]
 
 
 def load_companies() -> list[str]:
@@ -19,6 +26,29 @@ def load_companies() -> list[str]:
         if line and not line.startswith("#"):
             companies.append(line)
     return companies
+
+
+def fetch_names() -> dict:
+    """從 TWSE/TPEx API 抓取所有上市＋上櫃公司英文名稱，存入 names.json"""
+    names = {}
+    for label, url, key_code, key_zh, key_en in NAMES_APIS:
+        res = httpx.get(url, timeout=30)
+        res.raise_for_status()
+        data = res.json()
+        count = 0
+        for item in data:
+            code = item.get(key_code, "").strip()
+            if code:
+                names[code] = {
+                    "zh": item.get(key_zh, "").strip(),
+                    "en": item.get(key_en, "").strip(),
+                }
+                count += 1
+        print(f"  {label}：{count} 間")
+    Path(NAMES_FILE).write_text(
+        json.dumps(names, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    return names
 
 
 def load_state() -> dict:
@@ -152,6 +182,9 @@ async def main():
     companies = load_companies()
     state = load_state()
     print(f"追蹤 {len(companies)} 間公司")
+
+    print("抓取公司英文名稱...")
+    fetch_names()
 
     updates = []
     names = {}  # co_id -> name (stateless)
